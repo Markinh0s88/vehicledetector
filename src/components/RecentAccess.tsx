@@ -11,17 +11,17 @@ interface AccessRecord {
 const mockData: AccessRecord[] = [
   {
     plate: "ABC1234",
-    timestamp: "2024-03-20 14:30",
+    timestamp: "20/03/2024 14:30",
     isResident: true,
   },
   {
     plate: "XYZ5678",
-    timestamp: "2024-03-20 14:25",
+    timestamp: "20/03/2024 14:25",
     isResident: false,
   },
   {
     plate: "DEF9012",
-    timestamp: "2024-03-20 14:20",
+    timestamp: "20/03/2024 14:20",
     isResident: true,
   },
 ];
@@ -32,13 +32,13 @@ export const RecentAccess = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <List className="w-5 h-5" />
-          <h2 className="text-xl font-semibold">Recent Access</h2>
+          <h2 className="text-xl font-semibold">Acessos Recentes</h2>
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search plates..."
+            placeholder="Buscar placas..."
             className="pl-10 pr-4 py-2 rounded-full bg-white/50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
@@ -60,7 +60,7 @@ export const RecentAccess = () => {
                   : "bg-orange-100 text-orange-700"
               }`}
             >
-              {record.isResident ? "Resident" : "Visitor"}
+              {record.isResident ? "Residente" : "Visitante"}
             </span>
           </div>
         ))}
