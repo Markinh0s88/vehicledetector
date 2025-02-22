@@ -1,6 +1,7 @@
 
 import React from "react";
-import { Check, X } from "lucide-react";
+import { Check, X, User } from "lucide-react";
+import { findResident } from "./PlateRegistration";
 
 interface PlateRecognitionProps {
   plate?: string;
@@ -8,6 +9,8 @@ interface PlateRecognitionProps {
 }
 
 export const PlateRecognition = ({ plate, isResident }: PlateRecognitionProps) => {
+  const residentInfo = plate ? findResident(plate) : undefined;
+
   return (
     <div className="glass p-6 rounded-lg space-y-4">
       <h2 className="text-xl font-semibold">Reconhecimento de Placa</h2>
@@ -17,6 +20,16 @@ export const PlateRecognition = ({ plate, isResident }: PlateRecognitionProps) =
           <p className="text-3xl font-bold tracking-wider">
             {plate || "Nenhuma placa detectada"}
           </p>
+          {residentInfo && (
+            <div className="mt-2 text-sm text-gray-600">
+              <div className="flex items-center gap-1">
+                <User className="w-4 h-4" />
+                <span>
+                  Morador: {residentInfo.name} - Ap: {residentInfo.apartment}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
         {plate && (
           <div className="flex items-center space-x-2">
