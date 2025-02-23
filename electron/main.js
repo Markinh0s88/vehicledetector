@@ -1,7 +1,20 @@
 
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-const isDev = !app.isPackaged;
+const sqlite3 = require('better-sqlite3');
+
+const isDev = process.env.NODE_ENV === 'development';
+const db = new sqlite3('database.db');
+
+// Criar tabela de residentes se não existir
+db.exec(`
+  CREATE TABLE IF NOT EXISTS residents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    apartment TEXT NOT NULL,
+    plate TEXT NOT NULL UNIQUE
+  )
+`);
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -9,24 +22,54 @@ function createWindow() {
     height: 800,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
     }
   });
 
-  // Carrega a aplicação React
-  win.loadURL(
-    isDev
-      ? 'http://localhost:8080'
-      : `file://${path.join(__dirname, '../dist/index.html')}`
-  );
-
-  // Abre o DevTools automaticamente em desenvolvimento
   if (isDev) {
+    win.loadURL('http://localhost:8080');
     win.webContents.openDevTools();
+  } else {
+    win.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+
+  // Handlers para o SQLite
+  ipcMain.handle('add-resident', async (event, resident) => {
+    try {
+      const stmt = db.prepare('INSERT INTO residents (name, apartment, plate) VALUES (?, ?, ?)');
+      stmt.run(resident.name, resident.apartment, resident.plate);
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao adicionar residente:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-residents', async () => {
+    try {
+      const stmt = db.prepare('SELECT * FROM residents');
+      return stmt.all();
+    } catch (error) {
+      console.error('Erro ao buscar residentes:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('find-resident', async (event, plate) => {
+    try {
+      const stmt = db.prepare('SELECT * FROM residents WHERE plate = ?');
+      return stmt.get(plate);
+    } catch (error) {
+      console.error('Erro ao buscar residente:', error);
+      throw error;
+    }
+  });
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -38,30 +81,5 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
-});
-
-// Configuração do banco de dados SQLite
-const Database = require('better-sqlite3');
-const db = new Database('vehicles.db');
-
-// Criação das tabelas
-db.exec(`
-  CREATE TABLE IF NOT EXISTS residents (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    apartment TEXT NOT NULL,
-    plate TEXT UNIQUE NOT NULL
-  )
-`);
-
-// Handlers do IPC para operações no banco de dados
-ipcMain.handle('get-residents', () => {
-  const stmt = db.prepare('SELECT * FROM residents');
-  return stmt.all();
-});
-
-ipcMain.handle('add-resident', (event, resident) => {
-  const stmt = db.prepare('INSERT INTO residents (name, apartment, plate) VALUES (?, ?, ?)');
-  return stmt.run(resident.name, resident.apartment, resident.plate);
 });
 
