@@ -27,15 +27,23 @@ export default defineConfig(({ mode }) => ({
       appId: "com.controleacesso.app",
       productName: "Controle de Acesso",
       win: {
-        target: "nsis",
+        target: [
+          {
+            target: "nsis",
+            arch: ["x64"]
+          }
+        ],
         icon: "public/favicon.ico"
       },
       nsis: {
         oneClick: true,
+        perMachine: true,
+        allowElevation: true,
         allowToChangeInstallationDirectory: false,
         createDesktopShortcut: true,
         createStartMenuShortcut: true,
-        shortcutName: "Controle de Acesso"
+        shortcutName: "Controle de Acesso",
+        include: "./installer.nsh"
       }
     }
   }
