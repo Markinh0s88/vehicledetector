@@ -21,5 +21,19 @@ module.exports = defineConfig({
       },
     },
   },
+  electron: {
+    build: {
+      config: {
+        directories: {
+          output: 'dist-electron',
+          app: 'dist'
+        },
+        files: [
+          'dist/**/*',
+          'electron/**/*'
+        ],
+        asar: true
+      }
+    }
+  }
 });
-
